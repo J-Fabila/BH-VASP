@@ -238,14 +238,17 @@ $N_Simbolo_2" | sort | head -1)
          y=$(head -$j aux | tail -1 | awk '{print $2}')
          z=$(head -$j aux | tail -1 | awk '{print $3}')
 
-         echo "$(echo "$x+$xc" | bc ) $(echo "$y+$yc" | bc ) $(echo "$z+$dzc" | bc )" >> POSCAR
-         
+         echo "$(echo "$x+$dxc" | bc ) $(echo "$y+$dyc" | bc ) $(echo "$z+$dzc" | bc )" >> POSCAR
+         echo "$(echo "$x+$dxc" | bc ) $(echo "$y+$dyc" | bc ) $(echo "$z+$dzc" | bc )" 
+        
          # head -$j aux | tail -1 | awk '{print $1+$xc "  " $2+$yc "  " $3+$zc}' >> POSCAR
 
          rm kick
 
       done
-      rm aux
+      rm aux  #OJO: Creo que este no es necesario
+echo "================================terminamove============================================="
+
 
    fi
 
@@ -257,27 +260,45 @@ $N_Simbolo_2" | sort | head -1)
    do
       echo " --> SCF failed. Starting again from randomly generated structure! "
       head -$(($NPOSCAR+3)) CONTCAR$(($i-1)) | tail -$(($NPOSCAR+2)) >> aux   #OJO: ESTODAR PROBLEMS CON Selective, agregar elmismo condicional
-      # if [ $SelectiveDynamics = True ]
+      # if [ $Sel -eq 1 ]
       # then
-      # head -$NPOSCAR CONTCAR$(($i-1)) >> aux
-      # else
-      # head -$(($NPOSCAR+3)) CONTCAR$(($i-1)) >> aux
+      #    head -$NPOSCAR CONTCAR$(($i-1)) >> aux
+      # else									#OJO ACA: IDEM
+      #    head -$(($NPOSCAR+3)) CONTCAR$(($i-1)) >> aux
       # fi
+
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
 
       echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
 
       cat aux >> POSCAR
-      python ../programs/replace_line.py POSCAR Direct Cartesian   ##OJO ACA: No reemplazar cart pordirect, usar inverse
+#      python ../programs/replace_line.py POSCAR Direct Cartesian   ##OJO ACA: No reemplazar cart pordirect, usar inverse
       rm aux
+
+echo "    " >> auxtoinvert
 
       if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico #El 3 s arbitrario, solo determina si  [Au,3] es vacio o no
       then
-         python ../programs/RandomGenerator.py POSCAR $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum 
+         python ../programs/RandomGenerator.py auxtoinvert $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum 
       else
-         python ../programs/RandomGenerator.py POSCAR $Nt1 $XRange $YRange $ZRange $ZVacuum 
+         python ../programs/RandomGenerator.py auxtoinvert $Nt1 $XRange $YRange $ZRange $ZVacuum 
       fi
+echo "================AUXTOINVERT================================!"
+cat auxtoinvert
+echo "================================coordstoinvert============================================="
 
+      for ((qw=2;qw<$(($Nat+2));qw++))
+      do
+
+         coordstoinvert=$( head -$qw auxtoinvert | tail -1)
+         cd ../programs ; echo $coordstoinvert | ./inverse >> ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/POSCAR
+         cd ../programs ; echo $coordstoinvert | ./inverse 
+
+         cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
+
+      done
+
+      rm auxtoinvert
       ./run.sh
       contenido=$(grep "reached required accuracy" OUTCAR | wc -l )
 
