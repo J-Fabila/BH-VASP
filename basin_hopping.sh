@@ -283,9 +283,6 @@ echo "    " >> auxtoinvert
       else
          python ../programs/RandomGenerator.py auxtoinvert $Nt1 $XRange $YRange $ZRange $ZVacuum 
       fi
-echo "================AUXTOINVERT================================!"
-cat auxtoinvert
-echo "================================coordstoinvert============================================="
 
       for ((qw=2;qw<$(($Nat+2));qw++))
       do
