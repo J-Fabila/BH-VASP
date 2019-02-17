@@ -4,8 +4,6 @@
 #                                      Read the input.bh                                       #
 ################################################################################################
 
-#cd /home/lopb_g/jrff_a/tmpu/VASP/WORK_DIR/BH_VASP/BH_VASP #Agregada provisionalmente
-
 Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1)
 Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 1)
 N_Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
@@ -108,18 +106,27 @@ cp -r input $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2  ## OJO ACA: REVISAR CO
 #python programs/RandomGenerator.py $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/POSCAR   #Genera una estructura aleatoria y concatena a POSCAR
 
 cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
-
+echo "  " >>aux
 if [ $Npath -gt 8 ]
 then   #Si existe path al archivo inicializador toma las coordenadas del mismo y las concatena al POSCAR
    tail -$Nat $path >>  POSCAR
 else  #De otra forma  invoca al generador aleatorio
       if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico #El 3 s arbitrario, solo determina si  [Au,3] es vacio o no
       then
-         python ../programs/RandomGenerator.py POSCAR $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else
-         python ../programs/RandomGenerator.py POSCAR $Nt1 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
       fi
 fi
+for ((i=0;i<$Nat;i++))
+do
+
+echo " T  T  T">>din
+done
+tail -$Nat aux >> aux2
+paste aux2 din >>  POSCAR
+
+rm din aux aux2
 
 #cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2  #De aqui en adelante trabaja en este directorio
 
@@ -134,14 +141,23 @@ do
 echo " --> SCF failed. Starting again from randomly generated structure! "
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
       cp ../input/POSCAR POSCAR
+echo "  " >>aux
 
      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico #El 3 s arbitrario, solo determina si  [Au,3] es vacio o no
       then
-         python ../programs/RandomGenerator.py POSCAR $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else
-         python ../programs/RandomGenerator.py POSCAR $Nt1 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
       fi
 
+for ((i=0;i<$Nat;i++))
+do
+
+echo " T  T  T">>din
+done
+tail -$Nat aux >> aux2
+paste aux2 din >>  POSCAR
+rm din aux aux2
 
 
 
@@ -358,11 +374,20 @@ $N_Simbolo_2" | sort | head -1)
       else
          python ../programs/RandomGenerator.py auxtoinvert $Nt1 $XRange $YRange $ZRange $ZVacuum
       fi
-
+echo "    " >> aux3
       for ((m=0;m<$Nat;m++))
       do
-         head -$m auxtoinvert | tail -1 | ./../programs/inverse >> POSCAR  ###OJOACA: Si hay cores generados el problemaestá aca: resolver como kick (move)
+         head -$m auxtoinvert | tail -1 | ./../programs/inverse >> aux3
       done
+for ((ij=0;ij<$Nat;ij++))
+do
+
+echo " T  T  T">>din
+done
+tail -$Nat aux3 >> aux4
+paste aux4 din >>  POSCAR
+rm din aux3 aux4
+
 
       rm auxtoinvert
       ./run.sh
