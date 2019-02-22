@@ -273,7 +273,7 @@ $N_Simbolo_2" | sort | head -1)
  if [ $Sel -eq 1 ]
  then
 
-    head -$(($NPOSCAR+$Nat)) CONTCAR$(($i+1)) >> aux2
+    head -$(($NPOSCAR+$Nat)) CONTCAR$(($i-1)) >> aux2
     echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
     head -$NPOSCAR CONTCAR1 | tail -$(($NPOSCAR-1)) >> POSCAR
     tail -$Nat aux2 >> aux #Este contiene las coordenadas que leerá despues,
@@ -336,7 +336,7 @@ $N_Simbolo_2" | sort | head -1)
  if [ $Sel -eq 1 ]
  then
 
-    head -$(($NPOSCAR+$Nat)) CONTCAR$(($i+1)) >> aux2
+    head -$(($NPOSCAR+$Nat)) CONTCAR$(($i-1)) >> aux2
     echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
     head -$NPOSCAR CONTCAR1 | tail -$(($NPOSCAR-1)) >> POSCAR
     tail -$Nat aux2 >> aux #Este contiene las coordenadas que leerá despues,
