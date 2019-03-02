@@ -367,7 +367,7 @@ $N_Simbolo_2" | sort | head -1)
 
       echo "   " >> auxtoinvert            #Crea el archivo donde se guardarán las coordenadas
 
-      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico
+      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometálico
       then
          python ../programs/RandomGenerator.py auxtoinvert $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else
@@ -401,10 +401,10 @@ $N_Simbolo_2" | sort | head -1)
 
       rm din aux3 aux4
 
-      else                    #De otra forma echa directamente las coordenadas de aux a POSCAR 
+      else                    #De otra forma echa directamente las coordenadas de aux a POSCAR
 
          tail -$Nat aux3 >> POSCAR
-      fi   
+      fi
 
 
       rm auxtoinvert
