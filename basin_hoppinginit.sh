@@ -45,9 +45,9 @@ then                   #Si es soportado agrega los simbolos atomicos del cluster
    Species=$(head -6 POSCAR | tail -1)                    #                                   #
    Numbers=$(head -7 POSCAR | tail -1)                    #                                   #
    mv POSCAR aux                                          #            Estas lineas           #
-   head -5 aux >> POSCAR                                  #       concatenan los SÃ­mbolos     #
-   echo "$Species $Simbolo_1 $Simbolo_2" >> POSCAR        #            y nÃºmeros del          #
-   echo "$Numbers $N_Simbolo_1 $N_Simbolo_2 " >> POSCAR   #         clÃºster al POSCAR         #
+   head -5 aux >> POSCAR                                  #       concatenan los Símbolos     #
+   echo "$Species $Simbolo_1 $Simbolo_2" >> POSCAR        #            y números del          #
+   echo "$Numbers $N_Simbolo_1 $N_Simbolo_2 " >> POSCAR   #         clúster al POSCAR         #
    tail -$(($NPOSCAR-7)) aux >> POSCAR                    #                                   #
    rm aux                                                 #                                   #
                                                           #-----------------------------------#
@@ -116,7 +116,7 @@ then                       #Si existe toma las coordenadas del mismo y las conca
    tail -$Nat $path >>  POSCAR
 
 else                                             #De otra forma  invoca al generador aleatorio
-      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico #El 3 s arbitrario, solo determina si el segundo campo es vacio o no
+      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico #El 3 s arbitrario, solo determina si el segundo campo es vacio o no
       then                                                                    #Caso bimetalico
          python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else                                                                  #Caso monometalico
@@ -162,7 +162,7 @@ do
    cp ../input/POSCAR POSCAR
    echo "  " >>aux
 
-   if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico #El 3 s arbitrario, solo determina si  [Au,3] es vacio o no
+   if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico #El 3 s arbitrario, solo determina si  [Au,3] es vacio o no
    then
       python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
    else
@@ -346,7 +346,7 @@ $N_Simbolo_2" | sort | head -1)
          head -$(($NPOSCAR+$Nat)) CONTCAR$(($i+1)) >> aux2
          echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
          head -$NPOSCAR CONTCAR1 | tail -$(($NPOSCAR-1)) >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerÃ¡ despues
+         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
          rm aux2
 
       else
@@ -354,7 +354,7 @@ $N_Simbolo_2" | sort | head -1)
          head -$(($NPOSCAR+3+$Nat)) CONTCAR$(($i-1)) >> aux2
          echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
          head -8 CONTCAR1 | tail -7 >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerÃ¡ despues
+         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
 
       fi
 
@@ -367,7 +367,7 @@ $N_Simbolo_2" | sort | head -1)
 
       echo "   " >> auxtoinvert            #Crea el archivo donde se guardarán las coordenadas
 
-      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico
+      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico
       then
          python ../programs/RandomGenerator.py auxtoinvert $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else
