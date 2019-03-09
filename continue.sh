@@ -129,7 +129,7 @@ $N_Simbolo_2" | sort | head -1)
    fi                                             # Cierra el move-swap. Continua el algoritmo
 
    if [ $Sel -eq 1 ] 
-   then                                                   $
+   then                                                   
 
       for ((i=0;i<$Nat;i++))
       do
@@ -165,7 +165,7 @@ $N_Simbolo_2" | sort | head -1)
          head -$(($NPOSCAR+$Nat)) CONTCAR$(($i+1)) >> aux2
          echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
          head -$NPOSCAR CONTCAR1 | tail -$(($NPOSCAR-1)) >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerÃ¡ despues
+         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
          rm aux2
 
       else
@@ -173,7 +173,7 @@ $N_Simbolo_2" | sort | head -1)
          head -$(($NPOSCAR+3+$Nat)) CONTCAR$(($i-1)) >> aux2
          echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
          head -8 CONTCAR1 | tail -7 >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerÃ¡ despues
+         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
 
       fi
 
@@ -186,7 +186,7 @@ $N_Simbolo_2" | sort | head -1)
 
       echo "   " >> auxtoinvert            #Crea el archivo donde se guardarán las coordenadas
 
-      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico
+      if [ $n -gt 3 ]       #Determina y corre de acuerdo con si es bimetálico  o monometálico
       then
          python ../programs/RandomGenerator.py auxtoinvert $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else
