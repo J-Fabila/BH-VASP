@@ -1,4 +1,3 @@
-
 ################################################################################################
 #                                    Gets data from input.bh                                   #
 ################################################################################################
@@ -63,6 +62,7 @@ else          #Si es gas phase prepara el POSCAR, agrega los simbolos atomicos y
 
 fi
 
+direct=$(grep "irect" POSCAR | wc -l )
 
 ################################################################################################
 #                                   Generates POTCAR file                                      #
@@ -88,7 +88,7 @@ done
 rm Symbols
 
 
-################################ GENERATES RUN.sh FILE #######################################
+################################## GENERATES RUN.sh FILE #######################################
 
 echo "mpirun -np $Ncore vasp_gam > output.out" >> run.sh
 chmod +x run.sh
@@ -110,17 +110,34 @@ echo "  " >>aux      #Genera el archivo aux, ahi se pondrán las coordenadas de 
 
 
 if [ $Npath -gt 8 ]                           #Determina si hay archivo de inicializacion o no
-then                       #Si existe toma las coordenadas del mismo y las concatena al POSCAR
+then                           #Si existe toma las coordenadas del mismo y las copia al POSCAR
 
-   tail -$Nat $path >>  POSCAR
+   cp $path POSCAR
 
 else                                             #De otra forma  invoca al generador aleatorio
-      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico #El 3 s arbitrario, solo determina si el segundo campo es vacio o no
-      then                                                                    #Caso bimetalico
-         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
-      else                                                                  #Caso monometalico
-         python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
-      fi
+
+   if [ $n -gt 3 ]          #Determina y corre de acuerdo con si es bimetálico  o monometálico
+   then                                                                       #Caso bimetálico
+      python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+   else                                                                     #Caso monometálico
+      python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
+   fi
+
+   if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
+   then                        #Si está en direct convierte las coords del clúster a  directas
+
+      for ((jinv=1; jinv<$(($Nat+1)); jinv++))
+      do
+
+         cd ../programs ; head -$jinv aux | tail -1 | ./inverse >> ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/inverted
+           cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
+
+      done
+      rm aux                             #Este contiene las coordenadas Cartesianas originales
+      mv inverted aux                     #inverted tiene las coords directas, las manda a aux
+
+   fi
+
 fi
 
                               #Si hay selective dynamics activado entonces le coloca "T" a las
@@ -145,14 +162,19 @@ then                                                                #Si hay sele
 else                          #De otra forma echa directamente las coordenadas de aux a POSCAR 
 
    tail -$Nat aux >> POSCAR
+   rm aux
 fi   
 
 mkdir rejected                                               #Crea el directorio de rechazados
 ./run.sh                                                    #Crea el subproceso que corre VASP
 contenido=$(grep "reached required " OUTCAR | wc -l )        # 0 si no converge, 1 si converge
+echo "Configuracion CONTCAR!, terminando fase 1"
+cat CONTCAR  #OJO BORRAR DESPUES
+
+#############################################################ACA INICIA LA  FASE 2 DE PRUEBA
 
 
-#ACA INICIA LA  FASE 2 DE PRUEBA
+
 while [[ $contenido -ne 1  ]]       #Mientras no converja la configuracion reinicia el calculo
 do
 
@@ -161,12 +183,29 @@ do
    cp ../input/POSCAR POSCAR
    echo "  " >>aux
 
-   if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico #El 3 s arbitrario, solo determina si  [Au,3] es vacio o no
+   if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico
    then
       python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
    else
       python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
    fi
+
+   if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
+   then                        #Si está en direct convierte las coords del clúster a  directas
+
+      for ((jinv=1; jinv<$(($Nat+1)); jinv++))
+      do
+
+         cd ../programs ; head -$jinv aux | tail -1 | ./inverse >> ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/inverted
+           cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
+
+      done
+      rm aux                             #Este contiene las coordenadas Cartesianas originales
+      mv inverted aux                     #inverted tiene las coords directas, las manda a aux
+
+   fi
+
+
 
    if [ $Sel -eq 1 ] 
    then                                                             #Si hay selective dynamics
@@ -187,11 +226,16 @@ do
    else                      #De otra forma echa directamente las coordenadas de aux a POSCAR 
 
       tail -$Nat aux >> POSCAR
+      rm aux
+
    fi
+
+echo "POSCAR CONFIGURACION"  #OJO ACA:BORRA ESTS LINEAS CUAND ACABES Con las pruebas 
 cat POSCAR 
-
-
    ./run.sh
+echo "CONTCAR RELAJADO"
+cat CONTCAR
+
    contenido=$(grep "reached required " OUTCAR | wc -l )
 
 
@@ -203,6 +247,7 @@ echo "1         $Energia " >> CONTCAR1      #Escribe la energia y num de iteraci
 N=$(wc -l CONTCAR | awk '{ print $1 }' )         #Cuenta el numero de lineas que tiene CONTCAR
 tail -$(($N-1)) CONTCAR >> CONTCAR1       #Mueve la informacion a CONTCAR1 con el nuevo titulo
 mv POSCAR POSCAR1                                                      #Mueve POSCAR a POSCAR1
+cat CONTCAR1   #OJOACA: AUXILIAR BORRARDESPUES
 rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR
 
 echo " "
@@ -216,7 +261,7 @@ echo "For bimetallic clusters  : 1 atomic swap will be performed after 10 moves 
 echo "========================================================================================================="
 echo " "
 
-#COMIENZA FASE 3 DE PRUEBA
+##########################################################################COMIENZA FASE 3 DE PRUEBA
 
 i=2
 
@@ -240,6 +285,7 @@ do
       echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
       head -8 CONTCAR1 | tail -7 >> POSCAR
       tail -$Nat aux2 >> aux                 #Este contiene las coordenadas que leerá despues
+      rm aux2
 
    fi
 
@@ -329,89 +375,79 @@ $N_Simbolo_2" | sort | head -1)
    else                      #De otra forma echa directamente las coordenadas de aux a POSCAR 
 
       tail -$Nat preposcar >> POSCAR
-   fi
+      rm preposcar
 
+   fi
 
    echo "Iteration $i of structure $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2"
 
    ./run.sh
+   echo "CONTCAR terminando fase 3"
+   cat CONTCAR  #OJO: AUXILIAR BORRAR DESPUES
    contenido=$(grep "reached required accuracy" OUTCAR | wc -l )
 
-   while [[ $contenido -ne 1  ]]
-   do
+########################################################################################## COMIENZA FASE 4
+
+   while [[ $contenido -ne 1  ]]  #OJO ACA, AQUI ESTA EL PROBLEMA  PERSISTENTE DE QUE REVIENTA LAS  CONFIGURACIONES:
+   do     #EL PROBLEMA ES QUE NO ESTAS CONVIRTIENDO LAS COORDENADAS DEL GENERADOR ALEATORIO A DIRECT, SÍRVETE AGREGAR
+          #ESAS PINCHES LINEAS
+
       echo " --> SCF failed. Starting again from randomly generated structure! "
-
-      if [ $Sel -eq 1 ]              # Este if extrae las coordenadas de la iteracion anterior
-      then                                       # dependiendo del caso: soportado o gas phase
-
-         head -$(($NPOSCAR+$Nat)) CONTCAR$(($i+1)) >> aux2
-         echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
-         head -$NPOSCAR CONTCAR1 | tail -$(($NPOSCAR-1)) >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
-         rm aux2
-
-      else
-
-         head -$(($NPOSCAR+3+$Nat)) CONTCAR$(($i-1)) >> aux2
-         echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
-         head -8 CONTCAR1 | tail -7 >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
-
-      fi
-
-
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
+      cp ../input/POSCAR POSCAR
+      echo "  " >>aux
 
-      echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
-
-      cat aux >> POSCAR
-      rm aux
-
-      echo "   " >> auxtoinvert            #Crea el archivo donde se guardarán las coordenadas
-
-      if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico
+      if [ $n -gt 3 ]
       then
-         python ../programs/RandomGenerator.py auxtoinvert $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else
-         python ../programs/RandomGenerator.py auxtoinvert $Nt1 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
       fi
 
+      if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
+      then                        #Si está en direct convierte las coords del clúster a  directas
 
-      for ((ma=0;ma<$Nat;ma++))
-      do
+         for ((jinv=1; jinv<$(($Nat+1)); jinv++))
+         do
 
-         cd ../programs ;  head -$ma auxtoinvert | tail -1 | ./inverse >> ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/aux3 
-         cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
+            cd ../programs ; head -$jinv aux | tail -1 | ./inverse >> ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/inverted
+            cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
 
-      done
+         done
+         rm aux                             #Este contiene las coordenadas Cartesianas originales
+         mv inverted aux                     #inverted tiene las coords directas, las manda a aux
 
+      fi
 
 
       if [ $Sel -eq 1 ]
-      then                                                          #Si hay selective dynamics
+      then                                                             #Si hay selective dynamics
 
-         for ((iaux=0;iaux<$Nat;iaux++))
+         for ((iauxi=0;iauxi<$Nat;iauxi++))
          do
 
-            echo " T  T  T" >>din
+            echo " T T T" >>din
 
          done
+         
+         tail -$Nat aux >> aux2
+         paste aux2 din >>  POSCAR
+         rm din aux aux2
 
+      else      #De otra forma echa directamente las coordenadas de aux a POSCAR
 
-      tail -$Nat aux3 >> aux4
-      paste aux4 din >>  POSCAR
+         tail -$Nat aux >> POSCAR
+         rm aux
 
-      rm din aux3 aux4
+      fi
+echo "POSCAR de random generator, fase 4"
+cat POSCAR  #OJO: AXULIAR NOMAS; BORRAR LUego
 
-      else                    #De otra forma echa directamente las coordenadas de aux a POSCAR 
-
-         tail -$Nat aux3 >> POSCAR
-      fi   
-
-
-      rm auxtoinvert
       ./run.sh
-      contenido=$(grep "reached required accuracy" OUTCAR | wc -l )
+echo "CONTCAR de randon generator, fase 4"
+cat CONTCAR
+
+      contenido=$(grep "reached required " OUTCAR | wc -l )
 
    done #Continua con el codigo si si convergio
 
@@ -456,4 +492,3 @@ cd ..
 cd input
 rm run.sh POTCAR
 cd ..
-
