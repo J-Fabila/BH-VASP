@@ -43,9 +43,9 @@ then                   #Si es soportado agrega los simbolos atomicos del cluster
    Species=$(head -6 POSCAR | tail -1)                    #                                   #
    Numbers=$(head -7 POSCAR | tail -1)                    #                                   #
    mv POSCAR aux                                          #            Estas lineas           #
-   head -5 aux >> POSCAR                                  #       concatenan los Símbolos     #
-   echo "$Species $Simbolo_1 $Simbolo_2" >> POSCAR        #            y números del          #
-   echo "$Numbers $N_Simbolo_1 $N_Simbolo_2 " >> POSCAR   #         clúster al POSCAR         #
+   head -5 aux >> POSCAR                                  #       concatenan los SÃ­mbolos     #
+   echo "$Species $Simbolo_1 $Simbolo_2" >> POSCAR        #            y nÃºmeros del          #
+   echo "$Numbers $N_Simbolo_1 $N_Simbolo_2 " >> POSCAR   #         clÃºster al POSCAR         #
    tail -$(($NPOSCAR-7)) aux >> POSCAR                    #                                   #
    rm aux                                                 #                                   #
                                                           #-----------------------------------#
@@ -106,7 +106,7 @@ cp -r input $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2  ## OJO ACA: REVISAR CO
 
 cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2         #Nos mueve a ese directorio de trabajo
 
-echo "  " >>aux      #Genera el archivo aux, ahi se pondrán las coordenadas de RandomGenerator
+echo "  " >>aux      #Genera el archivo aux, ahi se pondrÃ¡n las coordenadas de RandomGenerator
 
 
 if [ $Npath -gt 8 ]                           #Determina si hay archivo de inicializacion o no
@@ -116,15 +116,15 @@ then                           #Si existe toma las coordenadas del mismo y las c
 
 else                                             #De otra forma  invoca al generador aleatorio
 
-   if [ $n -gt 3 ]          #Determina y corre de acuerdo con si es bimetálico  o monometálico
-   then                                                                       #Caso bimetálico
+   if [ $n -gt 3 ]          #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico
+   then                                                                       #Caso bimetÃ¡lico
       python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
-   else                                                                     #Caso monometálico
+   else                                                                     #Caso monometÃ¡lico
       python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
    fi
 
-   if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
-   then                        #Si está en direct convierte las coords del clúster a  directas
+   if [ $direct -eq 1 ]                       #Analiza si estÃ¡ en formato cartesiano o directo
+   then                        #Si estÃ¡ en direct convierte las coords del clÃºster a  directas
 
       for ((jinv=1; jinv<$(($Nat+1)); jinv++))
       do
@@ -141,7 +141,7 @@ else                                             #De otra forma  invoca al gener
 fi
 
                               #Si hay selective dynamics activado entonces le coloca "T" a las
-                                         # coordenadas del clúster, de otra forma los deja así
+                                         # coordenadas del clÃºster, de otra forma los deja asÃ­
 
 if [ $Sel -eq 1 ] 
 then                                                                #Si hay selective dynamics
@@ -183,15 +183,15 @@ do
    cp ../input/POSCAR POSCAR
    echo "  " >>aux
 
-   if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico
+   if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetÃ¡lico  o monometÃ¡lico
    then
       python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
    else
       python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
    fi
 
-   if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
-   then                        #Si está en direct convierte las coords del clúster a  directas
+   if [ $direct -eq 1 ]                       #Analiza si estÃ¡ en formato cartesiano o directo
+   then                        #Si estÃ¡ en direct convierte las coords del clÃºster a  directas
 
       for ((jinv=1; jinv<$(($Nat+1)); jinv++))
       do
@@ -276,7 +276,7 @@ do
       head -$(($NPOSCAR+$Nat)) CONTCAR$(($i-1)) >> aux2
       echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
       head -$NPOSCAR CONTCAR1 | tail -$(($NPOSCAR-1)) >> POSCAR
-      tail -$Nat aux2 >> aux                 #Este contiene las coordenadas que leerá despues
+      tail -$Nat aux2 >> aux                 #Este contiene las coordenadas que leerÃ¡ despues
       rm aux2
 
    else
@@ -284,7 +284,7 @@ do
       head -$(($NPOSCAR+3+$Nat)) CONTCAR$(($i-1)) >> aux2
       echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
       head -8 CONTCAR1 | tail -7 >> POSCAR
-      tail -$Nat aux2 >> aux                 #Este contiene las coordenadas que leerá despues
+      tail -$Nat aux2 >> aux                 #Este contiene las coordenadas que leerÃ¡ despues
       rm aux2
 
    fi
@@ -388,9 +388,8 @@ $N_Simbolo_2" | sort | head -1)
 
 ########################################################################################## COMIENZA FASE 4
 
-   while [[ $contenido -ne 1  ]]  #OJO ACA, AQUI ESTA EL PROBLEMA  PERSISTENTE DE QUE REVIENTA LAS  CONFIGURACIONES:
-   do     #EL PROBLEMA ES QUE NO ESTAS CONVIRTIENDO LAS COORDENADAS DEL GENERADOR ALEATORIO A DIRECT, SÍRVETE AGREGAR
-          #ESAS PINCHES LINEAS
+   while [[ $contenido -ne 1  ]]  #OJO ACA, AQUI ESTA EL PROBLEMA  PERSISTENTE DE QUE REVIENTA LAS  CONFRVETE AGREGAR
+          #ESAS PINCHES LINEASNO ESTAS CONVIRTIENDO LAS COORDENADAS DEL GENERADOR ALEATORIO A DIRECT, SÃ
 
       echo " --> SCF failed. Starting again from randomly generated structure! "
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
@@ -404,8 +403,8 @@ $N_Simbolo_2" | sort | head -1)
          python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
       fi
 
-      if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
-      then                        #Si está en direct convierte las coords del clúster a  directas
+      if [ $direct -eq 1 ]                       #Analiza si estÃ¡ en formato cartesiano o directo
+      then                        #Si estÃ¡ en direct convierte las coords del clÃºster a  directas
 
          for ((jinv=1; jinv<$(($Nat+1)); jinv++))
          do
@@ -486,7 +485,7 @@ cat CONTCAR
 
    done
 
-cd programs
+cd ../programs
 rm Matriz
 cd ..
 cd input
