@@ -1,8 +1,7 @@
-#! /bin/bash
+################################################################################################
+#                                    Gets data from input.bh                                   #
+################################################################################################
 
-################################################################################################
-#                                      Read the input.bh                                       #
-################################################################################################
 
 Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1)
 Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 1)
@@ -15,7 +14,7 @@ YRange=$(grep "y_range"  input.bh | cut -d " " -f 3)
 ZRange=$(grep "z_range"  input.bh | cut -d " " -f 3)
 ZVacuum=$(grep "z_vacuum"  input.bh | cut -d " " -f 3)
 Pseudo_Dir=$( grep "pseudo_dir" input.bh | awk '{print $3}' )
-pseudotype=$(grep "pseudo_type" input.bh | awk '{print $3}' )
+pseudotype=$(grep "pseudo_type" input.bh | awk '{print $3}' ) 
 step_width=$(grep "step_width" input.bh | awk '{print $3}')
 Temperature=$(grep "temperature_K" input.bh | awk '{ print $3 }')
 n=$(echo $Nt2  | wc -c  )
@@ -24,25 +23,24 @@ Ncore=$(grep "Ncore" input.bh | awk '{print $3}')
 iteraciones=$(grep "iterations" input.bh | awk '{ print $3 }' )
 path=$(grep "initialization_file" input.bh | awk '{ print $3 }' )
 Npath=$(echo $path | wc -c )
-NPOSCAR=$(wc -l input/POSCAR | awk '{ print $1}' ) #Numero de lineas del poscar sin cluster
 Sel=$(grep "Selective"  input/POSCAR | wc -l )   #Determina si hay un selective dynamics
+NPOSCAR=$(cat input/POSCAR | grep . | wc -l ) #Numero de lineas del poscar sin cluster
 
 
-cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2  #Se mueve al directorio de trabajo
-rm  CHG CHGCAR CONTCAR core* DOSCAR EIGENVAL IBZKPT OSZICAR OUTCAR PCDAT REPORT salida.out vasprun.xml WAVECAR XDATCAR 2> /dev/null  #Borra archivos residuales de la iteración  anterior
-i=$(for i in $(ls CONTCAR* ); do head -1 $i | awk '{ print $1 }' ; done | sort -n  | tail -1 ) #Revisa en qué iteración se quedó
-i=$(($i+1))                             #Actualiza el valor, inicia en la siguiente
+cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
+rm  CHG CHGCAR CONTCAR core* DOSCAR EIGENVAL IBZKPT OSZICAR OUTCAR PCDAT REPORT salida.out vasprun.xml WAVECAR XDATCAR 2> /dev/null
+i=$(for i in $(ls CONTCAR* ); do head -1 $i | awk '{ print $1 }' ; done | sort -n  | tail -1 )
+i=$(($i+1))
+cd rejected
 
-cd rejected                #Ahora buscará en qué índice de rechazadas nos quedamos
-m=$(ls CONTCAR* 2> /dev/null | wc -l  )
+m=$(ls CONTCAR* 2> /dev/null | wc -l  ) 
 m=$(($m+1))
+cd ..
 
-cd ..                                       #Regresamos al directorio de trabajo
-
-while [ $i -lt $(($iteraciones+1)) ]           #Reanudamos el programa principal
+while [ $i -lt $(($iteraciones+1)) ]
 do
 
-let resto=$i%10
+   let resto=$i%10                          # Calcula el resto de i  para hacer los pasos swap
 
    if [ $Sel -eq 1 ]                 # Este if extrae las coordenadas de la iteracion anterior
    then                                          # dependiendo del caso: soportado o gas phase
@@ -59,15 +57,17 @@ let resto=$i%10
       echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
       head -8 CONTCAR1 | tail -7 >> POSCAR
       tail -$Nat aux2 >> aux                 #Este contiene las coordenadas que leerá despues
+      rm aux2
 
    fi
+
 
    if [ $resto -eq 0 ]
    then #******************************** Aplica Swap ***************************************#
 
-
 tp=$(echo "$N_Simbolo_1
 $N_Simbolo_2" | sort | head -1)
+
 
       for ((k=0;k<$tp;k++))
       do
@@ -99,7 +99,6 @@ $N_Simbolo_2" | sort | head -1)
 
    else #******************************** Aplica Move ***************************************#
 
-
       for ((j=1; j<$(($Nat+1)); j++))
       do
 
@@ -128,10 +127,11 @@ $N_Simbolo_2" | sort | head -1)
 
    fi                                             # Cierra el move-swap. Continua el algoritmo
 
-   if [ $Sel -eq 1 ] 
-   then                                                   
 
-      for ((i=0;i<$Nat;i++))
+   if [ $Sel -eq 1 ] 
+   then                                                             #Si hay selective dynamics
+
+      for ((iuxil=0;iauxil<$Nat;iauxil++))
       do
 
          echo " T  T  T">>din
@@ -143,89 +143,83 @@ $N_Simbolo_2" | sort | head -1)
       paste aux20 din >>  POSCAR
 
       rm din aux20 preposcar
+
    else                      #De otra forma echa directamente las coordenadas de aux a POSCAR 
 
       tail -$Nat preposcar >> POSCAR
-   fi
+      rm preposcar
 
+   fi
 
    echo "Iteration $i of structure $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2"
 
    ./run.sh
+   echo "CONTCAR terminando fase 3"
+   cat CONTCAR  #OJO: AUXILIAR BORRAR DESPUES
    contenido=$(grep "reached required accuracy" OUTCAR | wc -l )
 
-   while [[ $contenido != 1  ]];
-   do
+########################################################################################## COMIENZA FASE 4
+
+   while [[ $contenido -ne 1  ]]  #OJO ACA, AQUI ESTA EL PROBLEMA  PERSISTENTE DE QUE REVIENTA LAS  CONFIGURACIONES:
+   do     #EL PROBLEMA ES QUE NO ESTAS CONVIRTIENDO LAS COORDENADAS DEL GENERADOR ALEATORIO A DIRECT, SÍRVETE AGREGAR
+          #ESAS PINCHES LINEAS
 
       echo " --> SCF failed. Starting again from randomly generated structure! "
-
-      if [ $Sel -eq 1 ]              # Este if extrae las coordenadas de la iteracion anterior
-      then                                       # dependiendo del caso: soportado o gas phase
-
-         head -$(($NPOSCAR+$Nat)) CONTCAR$(($i+1)) >> aux2
-         echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
-         head -$NPOSCAR CONTCAR1 | tail -$(($NPOSCAR-1)) >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
-         rm aux2
-
-      else
-
-         head -$(($NPOSCAR+3+$Nat)) CONTCAR$(($i-1)) >> aux2
-         echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
-         head -8 CONTCAR1 | tail -7 >> POSCAR
-         tail -$Nat aux2 >> aux              #Este contiene las coordenadas que leerá despues
-
-      fi
-
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
+      cp ../input/POSCAR POSCAR
+      echo "  " >>aux
 
-      echo "BH_DFT_VASP: POSCAR of iteration $i" >> POSCAR
-
-      cat aux >> POSCAR
-      rm aux
-
-      echo "   " >> auxtoinvert            #Crea el archivo donde se guardarán las coordenadas
-
-      if [ $n -gt 3 ]       #Determina y corre de acuerdo con si es bimetálico  o monometálico
+      if [ $n -gt 3 ]
       then
-         python ../programs/RandomGenerator.py auxtoinvert $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
       else
-         python ../programs/RandomGenerator.py auxtoinvert $Nt1 $XRange $YRange $ZRange $ZVacuum
+         python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
       fi
 
+      if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
+      then                        #Si está en direct convierte las coords del clúster a  directas
 
-      for ((ma=0;ma<$Nat;ma++))
-      do
-
-         cd ../programs ;  head -$ma auxtoinvert | tail -1 | ./inverse >> ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/aux3 
-         cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
-
-      done
-
-      if [ $Sel -eq 1 ]
-      then                                                          #Si hay selective dynamics
-
-         for ((i=0;i<$Nat;i++))
+         for ((jinv=1; jinv<$(($Nat+1)); jinv++))
          do
 
-            echo " T  T  T">>din
+            cd ../programs ; head -$jinv aux | tail -1 | ./inverse >> ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/inverted
+            cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
 
          done
+         rm aux                             #Este contiene las coordenadas Cartesianas originales
+         mv inverted aux                     #inverted tiene las coords directas, las manda a aux
 
-
-      tail -$Nat aux3 >> aux4
-      paste aux4 din >>  POSCAR
-
-      rm din aux3 aux4
-
-      else                    #De otra forma echa directamente las coordenadas de aux a POSCAR 
-
-         tail -$Nat aux3 >> POSCAR
       fi
 
-      rm auxtoinvert
+
+      if [ $Sel -eq 1 ]
+      then                                                             #Si hay selective dynamics
+
+         for ((iauxi=0;iauxi<$Nat;iauxi++))
+         do
+
+            echo " T T T" >>din
+
+         done
+         
+         tail -$Nat aux >> aux2
+         paste aux2 din >>  POSCAR
+         rm din aux aux2
+
+      else      #De otra forma echa directamente las coordenadas de aux a POSCAR
+
+         tail -$Nat aux >> POSCAR
+         rm aux
+
+      fi
+echo "POSCAR de random generator, fase 4"
+cat POSCAR  #OJO: AXULIAR NOMAS; BORRAR LUego
+
       ./run.sh
-      contenido=$(grep "reached required accuracy" OUTCAR | wc -l )
+echo "CONTCAR de randon generator, fase 4"
+cat CONTCAR
+
+      contenido=$(grep "reached required " OUTCAR | wc -l )
 
    done #Continua con el codigo si si convergio
 
@@ -264,9 +258,10 @@ $N_Simbolo_2" | sort | head -1)
 
    done
 
-cd programs
+cd ../programs
 rm Matriz
 cd ..
 cd input
 rm run.sh POTCAR
 cd ..
+
