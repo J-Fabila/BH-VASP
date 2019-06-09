@@ -1,15 +1,18 @@
-
 ################################################################################################
 #                                    Gets data from input.bh                                   #
 ################################################################################################
 
-
 Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1)
-Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 1)
+Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 1) 2>/dev/null
 N_Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
-N_Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 2 | cut -d "]" -f 1)
+N_Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 2 | cut -d "]" -f 1) 2>/dev/null
 Nt1=$(grep "cluster_ntyp"  input.bh | cut -d " " -f 3 | cut -d "," -f 1 )
-Nt2=$(grep "cluster_ntyp"  input.bh | cut -d " " -f 4)
+Nt2=$(grep "cluster_ntyp"  input.bh | cut -d " " -f 4) 2>/dev/null
+#Alternativa, a ver si funcioa
+#Nt1=$(grep "cluster_ntyp"  input.bh | cut -d "=" -f 2 | cut -d "," -f 1 )
+#Nt2=$(grep "cluster_ntyp"  input.bh | cut -d "," -f 2) 
+
+n=$(echo $Nt2  | wc -c  )  #Este es un criterio para determinar si es bimetálico o no
 XRange=$(grep "x_range"  input.bh | cut -d " " -f 3)
 YRange=$(grep "y_range"  input.bh | cut -d " " -f 3)
 ZRange=$(grep "z_range"  input.bh | cut -d " " -f 3)
@@ -18,8 +21,14 @@ Pseudo_Dir=$( grep "pseudo_dir" input.bh | awk '{print $3}' )
 pseudotype=$(grep "pseudo_type" input.bh | awk '{print $3}' ) 
 step_width=$(grep "step_width" input.bh | awk '{print $3}')
 Temperature=$(grep "temperature_K" input.bh | awk '{ print $3 }')
-n=$(echo $Nt2  | wc -c  )
+if [ $n -gt 3 ]
+then
 Nat=$(($N_Simbolo_1+$N_Simbolo_2)) #Numero de atomos del cluster
+echo $Nat
+else
+Nat=$(echo $N_Simbolo_1)
+echo $Nat
+fi
 Ncore=$(grep "Ncore" input.bh | awk '{print $3}')
 iteraciones=$(grep "iterations" input.bh | awk '{ print $3 }' )
 path=$(grep "initialization_file" input.bh | awk '{ print $3 }' )
@@ -29,9 +38,16 @@ Sel=$(grep "Selective"  input/POSCAR | wc -l )   #Determina si hay un selective 
 NPOSCAR=$(cat input/POSCAR | grep . | wc -l ) #Numero de lineas del poscar sin cluster
 
 
+
 ##############################################################################################
 #                                         BEGIN ALGORITHM                                    #
 ##############################################################################################
+
+cd input
+rm POTCAR run.sh 2> /dev/null   #Esto elimina los archivos residuales de otra corrida
+cd ../programs
+rm Matriz 2> /dev/null
+cd ..
 
 if [ $NPOSCAR -gt 5 ]                        #Determina si el sistema es gas phase o soportado
 then                   #Si es soportado agrega los simbolos atomicos del cluster y sus numeros
@@ -493,4 +509,3 @@ cd ..
 cd input
 rm run.sh POTCAR
 cd ..
-
