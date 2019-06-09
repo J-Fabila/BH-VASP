@@ -310,6 +310,8 @@ do
    if [ $resto -eq 0 ]
    then #******************************** Aplica Swap ***************************************#
 
+if [ $n -gt 3 ]
+then
 tp=$(echo "$N_Simbolo_1
 $N_Simbolo_2" | sort | head -1)
 
@@ -342,6 +344,9 @@ $N_Simbolo_2" | sort | head -1)
 
       done
 
+fi
+
+
    else #******************************** Aplica Move ***************************************#
 
       for ((j=1; j<$(($Nat+1)); j++))
@@ -364,7 +369,7 @@ $N_Simbolo_2" | sort | head -1)
          z=$(head -$j aux | tail -1 | awk '{print $3}')
 
          echo "$(echo "$x+$dxc" | bc ) $(echo "$y+$dyc" | bc ) $(echo "$z+$dzc" | bc )" >> preposcar
-
+         cat preposcar
          rm kick
 
       done
@@ -376,17 +381,20 @@ $N_Simbolo_2" | sort | head -1)
    if [ $Sel -eq 1 ] 
    then                                                             #Si hay selective dynamics
 
-      for ((iuxil=0;iauxil<$Nat;iauxil++))
+      for ((iauxil=0;iauxil<$Nat;iauxil++))
       do
 
-         echo " T  T  T">>din
+         echo " T  T  T" >> din
 
       done
 
 
       tail -$Nat preposcar >> aux20
       paste aux20 din >>  POSCAR
-
+      echo "aux20"
+      cat aux20
+      echo "din"
+      cat din
       rm din aux20 preposcar
 
    else                      #De otra forma echa directamente las coordenadas de aux a POSCAR 
@@ -395,7 +403,7 @@ $N_Simbolo_2" | sort | head -1)
       rm preposcar
 
    fi
-
+  cat POSCAR
    echo "Iteration $i of structure $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2"
 
    ./run.sh
@@ -405,9 +413,8 @@ $N_Simbolo_2" | sort | head -1)
 
 ########################################################################################## COMIENZA FASE 4
 
-   while [[ $contenido -ne 1  ]]  #OJO ACA, AQUI ESTA EL PROBLEMA  PERSISTENTE DE QUE REVIENTA LAS  CONFIGURACIONES:
-   do     #EL PROBLEMA ES QUE NO ESTAS CONVIRTIENDO LAS COORDENADAS DEL GENERADOR ALEATORIO A DIRECT, SÍRVETE AGREGAR
-          #ESAS PINCHES LINEAS
+   while [[ $contenido -ne 1  ]]
+   do
 
       echo " --> SCF failed. Starting again from randomly generated structure! "
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
@@ -443,7 +450,7 @@ $N_Simbolo_2" | sort | head -1)
          for ((iauxi=0;iauxi<$Nat;iauxi++))
          do
 
-            echo " T T T" >>din
+            echo " T T T" >> din
 
          done
          
@@ -461,7 +468,7 @@ echo "POSCAR de random generator, fase 4"
 cat POSCAR  #OJO: AXULIAR NOMAS; BORRAR LUego
 
       ./run.sh
-echo "CONTCAR de randon generator, fase 4"
+echo "CONTCAR de random generator, fase 4"
 cat CONTCAR
 
       contenido=$(grep "reached required " OUTCAR | wc -l )
@@ -509,3 +516,12 @@ cd ..
 cd input
 rm run.sh POTCAR
 cd ..
+
+cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
+for ((i=1;i<$((1+$(ls CONTCAR* | wc -l )));i++))
+do
+head -1 CONTCAR$i
+done  | sort -n -k 2 > energies
+
+cd ..
+
