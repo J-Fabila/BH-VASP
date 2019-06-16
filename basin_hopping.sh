@@ -1,3 +1,4 @@
+
 ################################################################################################
 #                                    Gets data from input.bh                                   #
 ################################################################################################
@@ -343,7 +344,8 @@ $N_Simbolo_2" | sort | head -1)
          rm aux
 
       done
-
+else
+   mv aux preposcar
 fi
 
 
@@ -518,10 +520,10 @@ rm run.sh POTCAR
 cd ..
 
 cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
+echo "Step,Energy" >>energies.csv
 for ((i=1;i<$((1+$(ls CONTCAR* | wc -l )));i++))
 do
 head -1 CONTCAR$i
-done  | sort -n -k 2 > energies
+done  | sort -nk2 | awk '{print $1","$2}' >> energies.csv
 
 cd ..
-
