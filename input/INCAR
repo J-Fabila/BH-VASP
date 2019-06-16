@@ -1,0 +1,36 @@
+#DFT calculation
+ ISTART = 0
+ ICHARG = 2        # charge: 1-file 2-atom 10-const
+ ISPIN  = 2        # spin polarized calculation (2-yes 1-no)
+ INIWAV = 1        # random initialization for wf.
+
+#Paralelization...depends on your system
+ NCORE   = 32
+
+
+#Electronic Relaxation
+ ENCUT  = 500
+ NELM   = 40       # maximum of 40 electronic steps
+ EDIFF  = 1E-4     # accuracy for electronic minimization
+ PREC   = Normal    # Normal or Accurate
+
+#Ionic relaxation
+ IBRION = 2
+ ISIF   = 2           # relax ions only
+ NSW    = 500
+ POTIM  = 0.5
+
+#Real space projection
+ LREAL = .FALSE.       # projections done in real space
+
+#Smearing
+ ISMEAR =  1
+ SIGMA  =  0.01
+
+#Wavefunctions
+ LWAVE  = .FALSE.
+ LCHARG = .FALSE.
+ LVTOT  = .FALSE.
+#Dispersion
+ IVDW   =  21
+
