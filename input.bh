@@ -1,0 +1,21 @@
+#################################################### 
+# Basin Hopping input file                         #
+####################################################
+
+&control
+        initialization_file = false
+        pseudo_dir = /tmpu/lopb_g/jrff_a/VASP/pseudos
+        pseudo_type =  
+        Ncore = 32
+/
+&basin_hopping
+        cluster_ntyp = [Au:2]
+        temperature_K = 2500
+        step_width = 0.8
+        iterations = 100
+/
+&random_range
+        x_range = [0:25]
+        y_range = [0:25]
+        z_range = [0:25]
+        z_vacuum = [10:25]
