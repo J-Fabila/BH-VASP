@@ -1,3 +1,15 @@
+################################################################################################
+#    Basin Hopping Algorithm coupled with VASP
+#    
+#    Author:
+#    Jorge Fabila
+#    https://github.com/J-Fabila
+#
+#    Oliver Paz-Borbón
+#
+################################################################################################
+
+
 
 ################################################################################################
 #                                    Gets data from input.bh                                   #
@@ -25,10 +37,8 @@ Temperature=$(grep "temperature_K" input.bh | awk '{ print $3 }')
 if [ $n -gt 3 ]
 then
 Nat=$(($N_Simbolo_1+$N_Simbolo_2)) #Numero de atomos del cluster
-echo $Nat
 else
 Nat=$(echo $N_Simbolo_1)
-echo $Nat
 fi
 Ncore=$(grep "Ncore" input.bh | awk '{print $3}')
 iteraciones=$(grep "iterations" input.bh | awk '{ print $3 }' )
@@ -39,34 +49,33 @@ Sel=$(grep "Selective"  input/POSCAR | wc -l )   #Determina si hay un selective 
 NPOSCAR=$(cat input/POSCAR | grep . | wc -l ) #Numero de lineas del poscar sin cluster
 
 
+swap_step=2      # SWAP STEP 
 
 ##############################################################################################
 #                                         BEGIN ALGORITHM                                    #
 ##############################################################################################
 
-cd input
-rm POTCAR run.sh 2> /dev/null   #Esto elimina los archivos residuales de otra corrida
-cd ../programs
+cd programs
 rm Matriz 2> /dev/null
 cd ..
 
-if [ $NPOSCAR -gt 5 ]                        #Determina si el sistema es gas phase o soportado
+if [ $NPOSCAR -gt 8 ]                        #Determina si el sistema es gas phase o soportado
 then                   #Si es soportado agrega los simbolos atomicos del cluster y sus numeros
    cd input
    cat POSCAR | grep . >> aux
    rm POSCAR
    cat aux >> POSCAR
    rm aux
-                                                          #-----------------------------------#
-   Species=$(head -6 POSCAR | tail -1)                    #                                   #
-   Numbers=$(head -7 POSCAR | tail -1)                    #                                   #
-   mv POSCAR aux                                          #            Estas lineas           #
-   head -5 aux >> POSCAR                                  #       concatenan los Símbolos     #
-   echo "$Species $Simbolo_1 $Simbolo_2" >> POSCAR        #            y números del          #
-   echo "$Numbers $N_Simbolo_1 $N_Simbolo_2 " >> POSCAR   #         clúster al POSCAR         #
-   tail -$(($NPOSCAR-7)) aux >> POSCAR                    #                                   #
-   rm aux                                                 #                                   #
-                                                          #-----------------------------------#
+                                                                #-----------------------------------#
+   Species=$(head -6 POSCAR | tail -1)                          #                                   #
+   Numbers=$(head -7 POSCAR | tail -1)                          #                                   #
+                                                                #            Estas lineas           #
+   head -5 POSCAR >> POSCARinitial                              #       concatenan los Símbolos     #
+   echo "$Species $Simbolo_1 $Simbolo_2" >> POSCARinitial       #            y números del          #
+   echo "$Numbers $N_Simbolo_1 $N_Simbolo_2 " >> POSCARinitial  #         clúster al POSCAR         #
+   tail -$(($NPOSCAR-7)) aux >> POSCARinitial                   #                                   #
+   rm aux                                                       #                                   #
+                                                                #-----------------------------------#
 else          #Si es gas phase prepara el POSCAR, agrega los simbolos atomicos y el "Cartesian"
    cd input
    cat POSCAR | grep . >> aux
@@ -74,21 +83,23 @@ else          #Si es gas phase prepara el POSCAR, agrega los simbolos atomicos y
    cat aux >> POSCAR
    rm aux
 
-   echo " $Simbolo_1 $Simbolo_2" >> POSCAR
-   echo "$N_Simbolo_1 $N_Simbolo_2 " >> POSCAR
-   echo "Cartesian">>POSCAR
+   head -5 POSCAR >> POSCARinitial
+   echo " $Simbolo_1 $Simbolo_2" >> POSCARinitial
+   echo "$N_Simbolo_1 $N_Simbolo_2 " >> POSCARinitial
+   echo "Cartesian">>POSCARinitial
 
 fi
 
 direct=$(grep "irect" POSCAR | wc -l )
+
+
 
 ################################################################################################
 #                                   Generates POTCAR file                                      #
 ################################################################################################
 
 
-
-head -6 POSCAR | tail -1 >> Species                #Toma la linea 6 del POSCAR, que contiene los
+head -6 POSCARinitial | tail -1 >> Species                #Toma la linea 6 del POSCAR, que contiene los
                                         # simbolos atomicos y los guarda en el archivo "Species"
 tr -s '[:blank:]' '\n' < Species >> aux  # Convierte la linea 6 en una columna, lo guarda en aux
 grep . aux >> Symbols         #Quita espacios en blanco (lineas vacias) y lo guarda en "Symbols"
@@ -118,11 +129,24 @@ head -5 POSCAR | tail -3 | awk '{print $1 " " $2 "  " $3}' >> ../programs/Matriz
 ##############################################################################################
 
 cd ..
+################################# CREATES Work Directory #####################################
 
-cp -r input $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2  ## OJO ACA: REVISAR COMO COPIA #Copia los archivos de input al directorio de trabajo
-#python programs/RandomGenerator.py $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/POSCAR   #Genera una estructura aleatoria y concatena a POSCAR
+if [ -d $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2 ]
+then
+   mv $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2 $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2_other
+fi
 
-cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2         #Nos mueve a ese directorio de trabajo
+cp -r input $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2 
+
+
+###############################################################################################
+rm input/POSCARinitial									      #
+rm input/POTCAR
+rm input/run.sh
+cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2         #Nos mueve a ese directorio de trabajo#
+rm POSCAR										      #
+cp POSCARinitial POSCAR									      #
+#####################################################################Auxiliar para no dejar el poscar modificado
 
 echo "  " >>aux      #Genera el archivo aux, ahi se pondrán las coordenadas de RandomGenerator
 
@@ -184,6 +208,7 @@ else                          #De otra forma echa directamente las coordenadas d
 fi   
 
 mkdir rejected                                               #Crea el directorio de rechazados
+cat POSCAR
 ./run.sh                                                    #Crea el subproceso que corre VASP
 contenido=$(grep "reached required " OUTCAR | wc -l )        # 0 si no converge, 1 si converge
 echo "Configuracion CONTCAR!, terminando fase 1"
@@ -198,7 +223,7 @@ do
 
    echo " --> SCF failed. Starting again from randomly generated structure! "
    rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
-   cp ../input/POSCAR POSCAR
+   cp POSCARinitial POSCAR
    echo "  " >>aux
 
    if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico
@@ -261,12 +286,15 @@ done                                                   #Continua con el codigo s
 
 
 Energia=$(tail -1 OSZICAR | awk '{print $5 }')                 #Extrae  la energia del OSZICAR
-echo "1         $Energia " >> CONTCAR1      #Escribe la energia y num de iteracion en CONTCAR1
+echo "1     $Energia " >> CONTCAR1      #Escribe la energia y num de iteracion en CONTCAR1
 N=$(wc -l CONTCAR | awk '{ print $1 }' )         #Cuenta el numero de lineas que tiene CONTCAR
 tail -$(($N-1)) CONTCAR >> CONTCAR1       #Mueve la informacion a CONTCAR1 con el nuevo titulo
 mv POSCAR POSCAR1                                                      #Mueve POSCAR a POSCAR1
 cat CONTCAR1   #OJOACA: AUXILIAR BORRARDESPUES
 rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR
+
+echo "Step  Energy" >> energies.txt
+echo "1     $Energia" >> energies.txt
 
 echo " "
 echo " --> Relaxation of initial configuration: DONE! "
@@ -283,10 +311,10 @@ echo " "
 
 i=2
 
-while [ $i -lt $(($iteraciones+1)) ]
+while [ $(($i+$m)) -lt $(($iteraciones+1)) ]
 do
 
-   let resto=$i%10                          # Calcula el resto de i  para hacer los pasos swap
+   let resto=$i%$swap_step                  # Calcula el resto de i  para hacer los pasos swap
 
    if [ $Sel -eq 1 ]                 # Este if extrae las coordenadas de la iteracion anterior
    then                                          # dependiendo del caso: soportado o gas phase
@@ -359,6 +387,9 @@ fi
          dz=$(python ../programs/move.py $step_width)
 
          cd ../programs ; echo "$dx $dy $dz" | ./inverse > ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/kick 
+echo "=====================kick========================="
+cat ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/kick
+echo "=================================================="
          cd ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
 
 
@@ -371,9 +402,13 @@ fi
          z=$(head -$j aux | tail -1 | awk '{print $3}')
 
          echo "$(echo "$x+$dxc" | bc ) $(echo "$y+$dyc" | bc ) $(echo "$z+$dzc" | bc )" >> preposcar
-         cat preposcar
-         rm kick
 
+echo "============== OPERACIONES ================="
+echo "$x+$dxc=$(echo "$x+$dxc" | bc )    $y+$dyc= $(echo "$y+$dyc" | bc )   $z+$dzc=$(echo "$z+$dzc" | bc )" 
+echo "============================================"
+cat preposcar
+         rm kick
+echo "MOVE Performed"
       done
       rm aux
 
@@ -420,7 +455,7 @@ fi
 
       echo " --> SCF failed. Starting again from randomly generated structure! "
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
-      cp ../input/POSCAR POSCAR
+      cp POSCARinitial POSCAR
       echo "  " >>aux
 
       if [ $n -gt 3 ]
@@ -477,53 +512,76 @@ cat CONTCAR
 
    done #Continua con el codigo si si convergio
 
+################################################################################################
+#                                     Save  configuration                                      #
+################################################################################################
+
+   EnergiaAnterior=$(echo $Energia)
    Energia=$(tail -1 OSZICAR | awk '{print $5 }')    #Extrae energia del OSZICAR
+
    echo "$i     $Energia " >> CONTCAR$i
    N=$(wc -l CONTCAR | awk '{ print $1 }' )
    tail -$(($N-1)) CONTCAR >> CONTCAR$i  #Renombra los archivos y les agrega la energia
    mv POSCAR POSCAR$i
-   rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR
+   rm CHG CHGCAR DOSCAR OSZICAR EIGENVAL XDATCAR IBZKPT  PCDAT REPORT WAVECAR *.xml CONTCAR
 
+################################################################################################
+#                                  Metropolis Monte-Carlo                                      #
+################################################################################################
 
-   #COMIENZA Algoritmo de metropolis
-
-   E0=$(head -1 CONTCAR$i | awk '{ print $1 }' )
-   En=$(head -1 CONTCAR$(($i-1)) | awk '{ print $1 }' )
-
-   accepted=$(python ../programs/metropolis.py $E0 $En $Temperature)
+   accepted=$(python ../programs/metropolis.py $EnergiaAnterior $Energia $Temperature)
 
       if [ $accepted = true ]
-      then
-        #Ha sido aceptado
+      then   # La energía ha sido aceptada
+
         echo "--> Basin Hopping MC criteria: Energy accepted! "
         echo "--> Finished iteration $i"
+        head -1 CONTCAR$i >> energies.txt
+        tail -$i energies.txt |  sort -nk2 > sorted.txt
         i=$(($i+1)) #Convergencia lograda, aumenta en 1 el contador
+
       else
+
         echo "--> Basin Hopping MC criteria: Energy rejected!"
-        mv CONTCAR$i rejected/CONTCARrejected$m
-        mv POSCAR$i rejected/POSCARrejected$m
+        mv CONTCAR$i rejected/CONTCARrejected$i
+        mv POSCAR$i rejected/POSCARrejected$i
         m=$(($m+1))
-        let res i%10
-#               if res=0
-#                       echo "--> Swap failed to converge"
-#                       swap_fail_flag=true
-#               fi
-        fi
+
+      fi
+
 
    done
 
 cd ../programs
 rm Matriz
 cd ..
-cd input
-rm run.sh POTCAR
-cd ..
 
 cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
-echo "Step,Energy" >>energies.csv
-for ((i=1;i<$((1+$(ls CONTCAR* | wc -l )));i++))
-do
-head -1 CONTCAR$i
-done  | sort -nk2 | awk '{print $1","$2}' >> energies.csv
+echo "About this project:" >> Summary.txt
+echo "
 
-cd ..
+INCAR file used
+
+==============================INCAR=============================== 
+" >> Summary.txt
+
+cat  ../input/INCAR >> Summary.txt
+echo "
+
+
+=================================================================
+
+
+KPOINTS file used
+
+
+=============================KPOINTS==============================
+">> Summary.txt
+
+cat ../input/KPOINTS >> Summary.txt
+
+echo "
+==================================================================" >> Summary.txt
+
+
+
