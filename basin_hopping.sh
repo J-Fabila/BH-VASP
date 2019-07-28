@@ -30,6 +30,19 @@ XRange=$(grep "x_range"  input.bh | cut -d " " -f 3)
 YRange=$(grep "y_range"  input.bh | cut -d " " -f 3)
 ZRange=$(grep "z_range"  input.bh | cut -d " " -f 3)
 ZVacuum=$(grep "z_vacuum"  input.bh | cut -d " " -f 3)
+
+xmin=$(grep "x_range" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1 )
+xmax=$(grep "x_range" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
+
+ymin=$(grep "y_range" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1 )
+ymax=$(grep "y_range" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
+
+zmin=$(grep "z_range" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1 )
+zmax=$(grep "z_range" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
+
+z_vac_min=$(grep "z_vacuum" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1 )
+z_vac_max=$(grep "z_vacuum" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
+
 Pseudo_Dir=$( grep "pseudo_dir" input.bh | awk '{print $3}' )
 pseudotype=$(grep "pseudo_type" input.bh | awk '{print $3}' ) 
 step_width=$(grep "step_width" input.bh | awk '{print $3}')
@@ -49,7 +62,7 @@ Sel=$(grep "Selective"  input/POSCAR | wc -l )   #Determina si hay un selective 
 NPOSCAR=$(cat input/POSCAR | grep . | wc -l ) #Numero de lineas del poscar sin cluster
 
 
-swap_step=2      # SWAP STEP 
+swap_step=10      # SWAP STEP 
 
 ##############################################################################################
 #                                         BEGIN ALGORITHM                                    #
@@ -91,8 +104,6 @@ else          #Si es gas phase prepara el POSCAR, agrega los simbolos atomicos y
 fi
 
 direct=$(grep "irect" POSCAR | wc -l )
-
-
 
 ################################################################################################
 #                                   Generates POTCAR file                                      #
@@ -148,9 +159,6 @@ rm POSCAR										      #
 cp POSCARinitial POSCAR									      #
 #####################################################################Auxiliar para no dejar el poscar modificado
 
-echo "  " >>aux      #Genera el archivo aux, ahi se pondrán las coordenadas de RandomGenerator
-
-
 if [ $Npath -gt 8 ]                           #Determina si hay archivo de inicializacion o no
 then                           #Si existe toma las coordenadas del mismo y las copia al POSCAR
 
@@ -160,10 +168,16 @@ else                                             #De otra forma  invoca al gener
 
    if [ $n -gt 3 ]          #Determina y corre de acuerdo con si es bimetálico  o monometálico
    then                                                                       #Caso bimetálico
-      python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+#      python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+ ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+
    else                                                                     #Caso monometálico
-      python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
+#      python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
+      ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
    fi
+
+   tail -$(($Nat+1)) ClusterGenerated.xyz | awk '{print $2 "  " $3 "  " $4 }' >> aux
+   rm ClusterGenerated.xyz
 
    if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
    then                        #Si está en direct convierte las coords del clúster a  directas
@@ -228,10 +242,16 @@ do
 
    if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico
    then
-      python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+#      python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+ ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+
    else
-      python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
+#      python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
+      ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+
    fi
+   tail -$(($Nat+1)) ClusterGenerated.xyz | awk '{print $2 "  " $3 "  " $4 }' >> aux
+   rm ClusterGenerated.xyz
 
    if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
    then                        #Si está en direct convierte las coords del clúster a  directas
@@ -370,8 +390,9 @@ $N_Simbolo_2" | sort | head -1)
             fi
          done
          rm aux
-
+         mv preposcar aux
       done
+      mv aux preposcar
 else
    mv aux preposcar
 fi
@@ -447,7 +468,6 @@ echo "MOVE Performed"
    echo "CONTCAR terminando fase 3"
    cat CONTCAR  #OJO: AUXILIAR BORRAR DESPUES
    contenido=$(grep "reached required accuracy" OUTCAR | wc -l )
-
 ########################################################################################## COMIENZA FASE 4
 
    while [[ $contenido -ne 1  ]]
@@ -456,14 +476,19 @@ echo "MOVE Performed"
       echo " --> SCF failed. Starting again from randomly generated structure! "
       rm CHG CHGCAR DOSCAR EIGENVAL XDATCAR IBZKPT OSZICAR PCDAT REPORT WAVECAR *.xml CONTCAR POSCAR
       cp POSCARinitial POSCAR
-      echo "  " >>aux
 
       if [ $n -gt 3 ]
       then
-         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+#         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
+    ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+
       else
-         python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
+ #        python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
+         ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+
       fi
+      tail -$(($Nat+1)) ClusterGenerated.xyz | awk '{print $2 "  " $3 "  " $4 }' >> aux
+      rm ClusterGenerated.xyz
 
       if [ $direct -eq 1 ]                       #Analiza si está en formato cartesiano o directo
       then                        #Si está en direct convierte las coords del clúster a  directas
