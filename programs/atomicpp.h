@@ -854,6 +854,7 @@ void VASP_to_xyz(string inputfile, string outputfile)
       command.clear();
 
       system(" ./commandi ");
+      system(" rm commandi");
 
       system("Nat=$(cat selective | wc -l  ) " );
 
