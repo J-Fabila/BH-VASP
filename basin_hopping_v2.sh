@@ -1,6 +1,6 @@
 ################################################################################################
 #    Basin Hopping Algorithm coupled with VASP
-#    
+#
 #    Author:
 #    Jorge Fabila
 #    https://github.com/J-Fabila
@@ -23,7 +23,7 @@ Nt1=$(grep "cluster_ntyp"  input.bh | cut -d " " -f 3 | cut -d "," -f 1 )
 Nt2=$(grep "cluster_ntyp"  input.bh | cut -d " " -f 4) 2>/dev/null
 #Alternativa, a ver si funcioa
 #Nt1=$(grep "cluster_ntyp"  input.bh | cut -d "=" -f 2 | cut -d "," -f 1 )
-#Nt2=$(grep "cluster_ntyp"  input.bh | cut -d "," -f 2) 
+#Nt2=$(grep "cluster_ntyp"  input.bh | cut -d "," -f 2)
 
 n=$(echo $Nt2  | wc -c  )  #Este es un criterio para determinar si es bimetálico o no
 XRange=$(grep "x_range"  input.bh | cut -d " " -f 3)
@@ -49,7 +49,7 @@ randomness= $(grep "randomness" input.bh | awk '{print $3}')
 #############################################################################
 
 Pseudo_Dir=$( grep "pseudo_dir" input.bh | awk '{print $3}' )
-pseudotype=$(grep "pseudo_type" input.bh | awk '{print $3}' ) 
+pseudotype=$(grep "pseudo_type" input.bh | awk '{print $3}' )
 step_width=$(grep "step_width" input.bh | awk '{print $3}')
 Temperature=$(grep "temperature_K" input.bh | awk '{ print $3 }')
 if [ $n -gt 3 ]
@@ -67,7 +67,7 @@ Sel=$(grep "Selective"  input/POSCAR | wc -l )   #Determina si hay un selective 
 NPOSCAR=$(cat input/POSCAR | grep . | wc -l ) #Numero de lineas del poscar sin cluster
 
 
-swap_step=10      # SWAP STEP 
+swap_step=10      # SWAP STEP
 
 ##############################################################################################
 #                                         BEGIN ALGORITHM                                    #
@@ -152,7 +152,7 @@ then
    mv $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2 $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2_other
 fi
 
-cp -r input $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2 
+cp -r input $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
 
 
 ###############################################################################################
@@ -178,14 +178,14 @@ else                                             #De otra forma  invoca al gener
          ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
       else
          ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
-      fi  
+      fi
    else                                                                     #Caso monometálico
       if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
       then
          ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
       else
          ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
-      fi  
+      fi
    fi
 
    tail -$(($Nat+1)) ClusterGenerated.xyz | awk '{print $2 "  " $3 "  " $4 }' >> aux
@@ -211,7 +211,7 @@ fi
                               #Si hay selective dynamics activado entonces le coloca "T" a las
                                          # coordenadas del clúster, de otra forma los deja así
 
-if [ $Sel -eq 1 ] 
+if [ $Sel -eq 1 ]
 then                                                                #Si hay selective dynamics
 
    for ((iaux=0;iaux<$Nat;iaux++))
@@ -227,11 +227,11 @@ then                                                                #Si hay sele
 
    rm din aux aux2
 
-else                          #De otra forma echa directamente las coordenadas de aux a POSCAR 
+else                          #De otra forma echa directamente las coordenadas de aux a POSCAR
 
    tail -$Nat aux >> POSCAR
    rm aux
-fi   
+fi
 
 mkdir rejected                                               #Crea el directorio de rechazados
 cat POSCAR
@@ -252,16 +252,23 @@ do
    cp POSCARinitial POSCAR
    echo "  " >>aux
 
-   if [ $n -gt 3 ] #Determina y corre de acuerdo con si es bimetálico  o monometálico
-   then
-#      python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
- ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+      if [ $n -gt 3 ]          #Determina y corre de acuerdo con si es bimetálico  o monometálico
+      then                                                                       #Caso bimetálico
+         if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
+         then
+            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         else
+            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         fi
+      else                                                                     #Caso monometálico
+         if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
+         then
+            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         else
+            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         fi
+      fi
 
-   else
-#      python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
-      ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
-
-   fi
    tail -$(($Nat+1)) ClusterGenerated.xyz | awk '{print $2 "  " $3 "  " $4 }' >> aux
    rm ClusterGenerated.xyz
 
@@ -282,7 +289,7 @@ do
 
 
 
-   if [ $Sel -eq 1 ] 
+   if [ $Sel -eq 1 ]
    then                                                             #Si hay selective dynamics
 
       for ((iauxi=0;iauxi<$Nat;iauxi++))
@@ -298,15 +305,15 @@ do
 
       rm din aux aux2
 
-   else                      #De otra forma echa directamente las coordenadas de aux a POSCAR 
+   else                      #De otra forma echa directamente las coordenadas de aux a POSCAR
 
       tail -$Nat aux >> POSCAR
       rm aux
 
    fi
 
-echo "POSCAR CONFIGURACION"  #OJO ACA:BORRA ESTS LINEAS CUAND ACABES Con las pruebas 
-cat POSCAR 
+echo "POSCAR CONFIGURACION"  #OJO ACA:BORRA ESTS LINEAS CUAND ACABES Con las pruebas
+cat POSCAR
    ./run.sh
 echo "CONTCAR RELAJADO"
 cat CONTCAR
@@ -381,7 +388,7 @@ $N_Simbolo_2" | sort | head -1)
       do
 
          t=$(shuf -i 1-$N_Simbolo_1 -n 1)
-         f=$(shuf -i 1-$N_Simbolo_2 -n 1) 
+         f=$(shuf -i 1-$N_Simbolo_2 -n 1)
          m=$(($N_Simbolo_1+$f))
          lt=$(head -$t aux | tail -1 )
          lm=$(head -$m aux | tail -1 )
@@ -411,15 +418,16 @@ fi
 
 
    else #******************************** Aplica Move ***************************************#
-
-      for ((j=1; j<$(($Nat+1)); j++))
-      do
+      if [ $kick -eq 0 ]
+      then
+         for ((j=1; j<$(($Nat+1)); j++))
+         do
 
          dx=$(python ../programs/move.py $step_width)
          dy=$(python ../programs/move.py $step_width)
          dz=$(python ../programs/move.py $step_width)
 
-         cd ../programs ; echo "$dx $dy $dz" | ./inverse > ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/kick 
+         cd ../programs ; echo "$dx $dy $dz" | ./inverse > ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/kick
 echo "=====================kick========================="
 cat ../$Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2/kick
 echo "=================================================="
@@ -437,18 +445,41 @@ echo "=================================================="
          echo "$(echo "$x+$dxc" | bc ) $(echo "$y+$dyc" | bc ) $(echo "$z+$dzc" | bc )" >> preposcar
 
 echo "============== OPERACIONES ================="
-echo "$x+$dxc=$(echo "$x+$dxc" | bc )    $y+$dyc= $(echo "$y+$dyc" | bc )   $z+$dzc=$(echo "$z+$dzc" | bc )" 
+echo "$x+$dxc=$(echo "$x+$dxc" | bc )    $y+$dyc= $(echo "$y+$dyc" | bc )   $z+$dzc=$(echo "$z+$dzc" | bc )"
 echo "============================================"
 cat preposcar
          rm kick
 echo "MOVE Performed"
-      done
+         done
+      else
+         #Aplica la otra patada
+         for ((j=1; j<$(($N_Simbolo_1+1)); j++))
+         do
+            echo $Simbolo_1 >> simbolos.aux
+         done
+         for ((j=1; j<$(($N_Simbolo_2+1)); j++))
+         do
+            echo $Simbolo_2 >> simbolos.aux
+         done
+         paste simbolos.aux aux >> xyz
+         echo $Nat >> cluster.xyz
+         echo " " >> cluster.xyz
+         cat xyz >> cluster.xyz
+         #kickpp.cpp lee cluster.xyz.Hace la patada
+         cp ../programs/kickpp .
+         ./kickpp # < cluster.xyz > aux2
+         rm kickpp
+         tail -$Nat aux2 >> preposcar                 #Este contiene las coordenadas que leerá despues
+         rm cluster.xyz
+         rm xyz
+         rm simbolos.aux
+      fi
       rm aux
 
    fi                                             # Cierra el move-swap. Continua el algoritmo
 
 
-   if [ $Sel -eq 1 ] 
+   if [ $Sel -eq 1 ]
    then                                                             #Si hay selective dynamics
 
       for ((iauxil=0;iauxil<$Nat;iauxil++))
@@ -467,7 +498,7 @@ echo "MOVE Performed"
       cat din
       rm din aux20 preposcar
 
-   else                      #De otra forma echa directamente las coordenadas de aux a POSCAR 
+   else                      #De otra forma echa directamente las coordenadas de aux a POSCAR
 
       tail -$Nat preposcar >> POSCAR
       rm preposcar
@@ -491,13 +522,20 @@ echo "MOVE Performed"
 
       if [ $n -gt 3 ]
       then
-#         python ../programs/RandomGenerator.py aux $Nt1,$Nt2 $XRange $YRange $ZRange $ZVacuum
-    ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
-
-      else
- #        python ../programs/RandomGenerator.py aux $Nt1 $XRange $YRange $ZRange $ZVacuum
-         ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
-
+        #Caso bimetálico
+         if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
+         then
+            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         else
+            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         fi
+      else                                                                     #Caso monometálico
+         if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
+         then
+            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         else
+            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $xmin $xmax $ymin $ymax $zmin $zmax $z_vac_min $z_vac_max
+         fi
       fi
       tail -$(($Nat+1)) ClusterGenerated.xyz | awk '{print $2 "  " $3 "  " $4 }' >> aux
       rm ClusterGenerated.xyz
@@ -527,7 +565,7 @@ echo "MOVE Performed"
             echo " T T T" >> din
 
          done
-         
+
          tail -$Nat aux >> aux2
          paste aux2 din >>  POSCAR
          rm din aux aux2
@@ -597,7 +635,7 @@ cd $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2
 echo "About this project:" >> Summary.txt
 echo "
 INCAR file used
-==============================INCAR=============================== 
+==============================INCAR===============================
 " >> Summary.txt
 
 cat  ../input/INCAR >> Summary.txt
