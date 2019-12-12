@@ -13,6 +13,8 @@
         temperature_K = 2500
         step_width = 0.8
         iterations = 100
+        randomness = 1 
+        kick = 1
 /
 &random_range
         x_range = [0:25]
