@@ -46,6 +46,8 @@ z_vac_max=$(grep "z_vacuum" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -
 
 #############################################################################
 randomness= $(grep "randomness" input.bh | awk '{print $3}')
+kick= $(grep "kick" input.bh | awk '{print $3}')
+
 #############################################################################
 
 Pseudo_Dir=$( grep "pseudo_dir" input.bh | awk '{print $3}' )
