@@ -1,19 +1,21 @@
 # BH-VASP
 ```
-project
-│   README.md
-│   file001.txt    
+BH-VASP
+│     input.bh
+│     queue.sh    
 │
-└───folder1
-│   │   file011.txt
-│   │   file012.txt
-│   │
-│   └───subfolder1
-│       │   file111.txt
-│       │   file112.txt
-│       │   ...
+└───input
+│     INCAR
+│     KPOINTS
+│     to_xyz
+│     to_vasp
 │   
-└───folder2
-    │   file021.txt
-    │   file022.txt
-    ```
+└───programs
+      atomicpp.h
+      inverse
+      kickpp
+      metropolis.py
+      move.py
+      RandomGenerator
+      SRandomGenerator`
+      ```
