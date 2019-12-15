@@ -1,8 +1,8 @@
 # BH-VASP
 ```
 BH-VASP
-│     input.bh
-│     queue.sh    
+│   input.bh
+│   queue.sh    
 │
 └───input
 │     INCAR
