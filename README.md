@@ -1,5 +1,5 @@
 # BH-VASP
-```
+
 BH-VASP
 │   input.bh
 │   queue.sh
@@ -8,6 +8,7 @@ BH-VASP
 └───input
 │        INCAR
 │        KPOINTS
+|        POSCAR
 │        to_xyz
 │        to_vasp
 └───programs
@@ -17,5 +18,23 @@ BH-VASP
          metropolis.py
          move.py
          RandomGenerator
-         SRandomGenerator`
-   ```
+         SRandomGenerator
+
+file_name (output directory)
+│   CONTCAR1, CONTCAR2, ... , CONTCARn
+|   POSCAR1, POSCAR2, ..., POSCARn
+|   energies.txt
+|   sorted.txt
+|   summary.txt
+|   run.sh
+|   INCAR, POTCAR, KPOINTS
+|   CHG, CHGCAR, EIGENVAL, ... , IBZKPT
+└───input (copy of the original)
+└───rejected (by the MC criterion)
+         CONTCARrejected12
+         POSCARrejected12
+         CONTCARrejected23
+         POSCARrejected23
+         
+         
+         
