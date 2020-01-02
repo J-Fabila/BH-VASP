@@ -50,3 +50,6 @@ wget https://raw.githubusercontent.com/J-Fabila/BH-VASP/master/input/KPOINTS
 wget https://raw.githubusercontent.com/J-Fabila/BH-VASP/master/input/POSCAR
 cd ..
 rm $0
+
+
+ echo -e "\e[34m Holis \e[0m"
