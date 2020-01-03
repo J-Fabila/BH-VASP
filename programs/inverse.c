@@ -17,11 +17,11 @@ float M[3][3];
 float aux[3][3];
 float inverse[3][3];
 
-int main()
+int main(int argc, char *argv[])
 {
 scanf("%f  %f  %f\n", &k[0], &k[1], &k[2]);
 
-FILE *f = fopen("Matriz", "r");
+FILE *f = fopen(argv[1], "r");
 
 for(i=0;i<3;i++) //Lee los elementos de matriz
 {
@@ -78,4 +78,5 @@ fclose(f);
 
 return 0;
 }
+
 
