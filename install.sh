@@ -65,10 +65,11 @@ sleep 1.7
 mkdir auxiliar_programs
 cd auxiliar_programs
 
-wget https://raw.githubusercontent.com/J-Fabila/BH-VASP/master/programs/to_vasp
-wget https://raw.githubusercontent.com/J-Fabila/BH-VASP/master/programs/to_xyz.cpp
+wget https://raw.githubusercontent.com/J-Fabila/VASP_to_XYZ/master/XYZtoPOSCAR.sh
+wget https://raw.githubusercontent.com/J-Fabila/VASP_to_XYZ/master/POSCARtoXYZ.c
+mv XYZtoPOSCAR.sh to_vasp
 chmod +x to_vasp
-g++ -o to_xyz to_xyz.cpp
+gcc -o to_xyz POSCARtoXYZ.c
 #Agrega estos programas como comandos cualquiera
 echo "
 
