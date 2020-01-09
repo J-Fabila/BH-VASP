@@ -1,4 +1,3 @@
-
 Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1)
 Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 1) 2>/dev/null
 N_Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
@@ -31,15 +30,52 @@ Sel=$(grep "Selective"  input/POSCAR | wc -l )   #Determina si hay un selective 
 NPOSCAR=$(cat input/POSCAR | grep . | wc -l ) #Numero de lineas del poscar sin cluster
 swap_step=10      # SWAP STEP
 cd $file_name
-rm  CHG CHGCAR CONTCAR core* DOSCAR EIGENVAL IBZKPT OSZICAR OUTCAR PCDAT REPORT salida.out vasprun.xml WAVECAR XDATCAR 2> /dev/null
+rm POSCAR CHG CHGCAR CONTCAR core* DOSCAR EIGENVAL IBZKPT OSZICAR OUTCAR PCDAT REPORT salida.out vasprun.xml WAVECAR XDATCAR 2> /dev/null
 i=$(for i in $(ls CONTCAR* ); do head -1 $i | awk '{ print $1 }' ; done | sort -n  | tail -1 )
 i=$(($i+1))
 cd rejected
 
 m=$(ls CONTCAR* 2> /dev/null | wc -l  )
 m=$(($m+1))
-cd ..
+cd ../..
 
+################################################################################
+
+if [ $NPOSCAR -gt 8 ]                        #Determina si el sistema es gas phase o soportado
+then                   #Si es soportado agrega los simbolos atomicos del cluster y sus numeros
+   #Si es soportado además lee el cristal del POSCAR y establece los xrange,yrange y zrange.
+   cd input
+   cp ../programs/read_crystal .
+   ./read_crystal > rangos
+   rm read_crystal
+   xmin=$(awk '{print $1}' rangos)
+   xmax=$(awk '{print $2}' rangos)
+   ymin=$(awk '{print $3}' rangos)
+   ymax=$(awk '{print $4}' rangos)
+   zmin=$(awk '{print $5}' rangos)
+   zmax=$(awk '{print $6}' rangos)
+   z_vac_min=$(awk '{print $7}' rangos)
+   z_vac_max=$(awk '{print $8}' rangos)
+   rm rangos
+   cd ..
+else          #Si es gas phase prepara el POSCAR, agrega los simbolos atomicos y el "Cartesian"
+   cd programs
+   ./read_matriz Matriz_$file_name > rangos
+   xmin=$(awk '{print $1}' rangos)
+   xmax=$(awk '{print $2}' rangos)
+   ymin=$(awk '{print $3}' rangos)
+   ymax=$(awk '{print $4}' rangos)
+   zmin=$(awk '{print $5}' rangos)
+   zmax=$(awk '{print $6}' rangos)
+   z_vac_min=$(awk '{print $7}' rangos)
+   z_vac_max=$(awk '{print $8}' rangos)
+   rm rangos
+   cd ..
+fi
+
+cd $file_name                                           #Nos mueve a ese directorio de trabajo#
+
+################################################################################
 
 while [ $(($i+$m)) -lt $(($iteraciones+1)) ]
 do
@@ -194,12 +230,9 @@ echo "MOVE Performed"
       rm preposcar
 
    fi
-  cat POSCAR
    echo "Iteration $i of structure $Simbolo_1$N_Simbolo_1$Simbolo_2$N_Simbolo_2 ($file_name)"
 
    ./run.sh
-   echo "CONTCAR terminando fase 3"
-   cat CONTCAR  #OJO: AUXILIAR BORRAR DESPUES
    contenido=$(grep "reached required accuracy" OUTCAR | wc -l )
 ########################################################################################## COMIENZA FASE 4
 
@@ -264,12 +297,8 @@ rm Matriz_$file_name
          rm aux
 
       fi
-echo "POSCAR de random generator, fase 4"
-cat POSCAR  #OJO: AXULIAR NOMAS; BORRAR LUego
 
       ./run.sh
-echo "CONTCAR de random generator, fase 4"
-cat CONTCAR
 
       contenido=$(grep "reached required " OUTCAR | wc -l )
 
@@ -279,7 +308,8 @@ cat CONTCAR
 #                                     Save  configuration                                      #
 ################################################################################################
 
-   EnergiaAnterior=$(echo $Energia)
+   
+   EnergiaAnterior=$(  head -1  CONTCAR$(($i-1)) | awk '{print $2}'   )
    Energia=$(tail -1 OSZICAR | awk '{print $5 }')    #Extrae energia del OSZICAR
 
    echo "$i     $Energia " >> CONTCAR$i
