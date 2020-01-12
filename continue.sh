@@ -1,32 +1,33 @@
-Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 1)
-Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 1) 2>/dev/null
-N_Simbolo_1=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
-N_Simbolo_2=$(grep "cluster_ntyp" input.bh | cut -d "[" -f 3 | cut -d ":" -f 2 | cut -d "]" -f 1) 2>/dev/null
-Nt1=$(grep "cluster_ntyp"  input.bh | cut -d " " -f 3 | cut -d "," -f 1 )
-Nt2=$(grep "cluster_ntyp"  input.bh | cut -d " " -f 4) 2>/dev/null
-n=$(grep "cluster_ntyp"  input.bh | awk '{print $4}' | wc -c )  #Este es un criterio para determinar si es bimetálico o no
+Simbolo_1=$(grep "cluster_ntyp" $1 | cut -d "[" -f 2 | cut -d ":" -f 1)
+Simbolo_2=$(grep "cluster_ntyp" $1 | cut -d "[" -f 3 | cut -d ":" -f 1) 2>/dev/null
+N_Simbolo_1=$(grep "cluster_ntyp" $1 | cut -d "[" -f 2 | cut -d ":" -f 2 | cut -d "]" -f 1)
+N_Simbolo_2=$(grep "cluster_ntyp" $1 | cut -d "[" -f 3 | cut -d ":" -f 2 | cut -d "]" -f 1) 2>/dev/null
+Nt1=$(grep "cluster_ntyp"  $1 | cut -d " " -f 3 | cut -d "," -f 1 )
+Nt2=$(grep "cluster_ntyp"  $1 | cut -d " " -f 4) 2>/dev/null
+n=$(grep "cluster_ntyp"  $1 | awk '{print $4}' | wc -c )  #Este es un criterio para determinar si es bimetálico o no
 
-randomness=$(grep "randomness" input.bh | awk '{print $3}')
-kick=$(grep "kick_type" input.bh | awk '{print $3}')
-file_name=$(grep "file_name" input.bh | awk '{print $3}')
+randomness=$(grep "randomness" $1 | awk '{print $3}')
+kick=$(grep "kick_type" $1 | awk '{print $3}')
+file_name=$(grep "file_name" $1 | awk '{print $3}')
 
-Pseudo_Dir=$( grep "pseudo_dir" input.bh | awk '{print $3}' )
-pseudotype=$(grep "pseudo_type" input.bh | awk '{print $3}' )
-step_width=$(grep "step_width" input.bh | awk '{print $3}')
-Temperature=$(grep "temperature_K" input.bh | awk '{ print $3 }')
+Pseudo_Dir=$( grep "pseudo_dir" $1 | awk '{print $3}' )
+pseudotype=$(grep "pseudo_type" $1 | awk '{print $3}' )
+step_width=$(grep "step_width" $1  | awk '{print $3}')
+Temperature=$(grep "temperature_K" $1 | awk '{ print $3 }')
 if [ $n -gt 3 ]
 then
 Nat=$(($N_Simbolo_1+$N_Simbolo_2)) #Numero de atomos del cluster
 else
 Nat=$(echo $N_Simbolo_1)
 fi
-#Ncore=$(grep "Ncore" input.bh | awk '{print $3}')
 Ncore=$(grep " -n " queue.sh | awk '{print $3}' )
-iteraciones=$(grep "iterations" input.bh | awk '{ print $3 }' )
-path=$(grep "initialization_file" input.bh | awk '{ print $3 }' )
+iteraciones=$(grep "iterations" $1 | awk '{ print $3 }' )
+path=$(grep "initialization_file" $1 | awk '{ print $3 }' )
 Npath=$(echo $path | wc -c )
 m=1 #contador de coords rechazadas
 Sel=$(grep "Selective"  input/POSCAR | wc -l )   #Determina si hay un selective dynamics
+direct=$(grep "irect" input/POSCAR | wc -l )
+
 NPOSCAR=$(cat input/POSCAR | grep . | wc -l ) #Numero de lineas del poscar sin cluster
 swap_step=10      # SWAP STEP
 cd $file_name
@@ -155,9 +156,6 @@ fi
          dz=$(python ../programs/move.py $step_width)
 
          cd ../programs ; echo "$dx $dy $dz" | ./inverse Matriz_$file_name > ../$file_name/kick
-echo "=====================kick========================="
-cat ../$file_name/kick
-echo "=================================================="
          cd ../$file_name
 
          dxc=$(awk '{print $1}' kick)     #---------------------------------------------#
@@ -170,12 +168,7 @@ echo "=================================================="
 
          echo "$(echo "$x+$dxc" | bc ) $(echo "$y+$dyc" | bc ) $(echo "$z+$dzc" | bc )" >> preposcar
 
-echo "============== OPERACIONES ================="
-echo "$x+$dxc=$(echo "$x+$dxc" | bc )    $y+$dyc= $(echo "$y+$dyc" | bc )   $z+$dzc=$(echo "$z+$dzc" | bc )"
-echo "============================================"
-cat preposcar
          rm kick
-echo "MOVE Performed"
          done
       else
          #Aplica la otra patada
