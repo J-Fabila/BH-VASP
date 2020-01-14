@@ -10,6 +10,6 @@ module load vasp/5.4.4
 #BSUB -J Ir5
 
 #./continue.sh 2>> Ir5.err >> Ir5.out
-./basin_hopping.sh 2>> Ir5.err >> Ir5.out
+./basin_hopping.sh input.bh 2>> Ir5.err >> Ir5.out
 
 
