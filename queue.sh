@@ -9,7 +9,7 @@ module load vasp/5.4.4
 #BSUB -m "g3_a g3_b"
 #BSUB -J Ir5
 
-#./continue.sh 2>> Ir5.err >> Ir5.out
+#./continue.sh input.bh 2>> Ir5.err >> Ir5.out
 ./basin_hopping.sh input.bh 2>> Ir5.err >> Ir5.out
 
 
