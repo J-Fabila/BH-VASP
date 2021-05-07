@@ -35,7 +35,9 @@ echo "
 
 "
 sleep 1.5
-wget https://raw.githubusercontent.com/J-Fabila/Atomic.h/master/atomicpp.h
+wget https://raw.githubusercontent.com/J-Fabila/Atomic.h/master/Cpp-version/atomic.hpp
+mv atomic.hpp atomicpp.h
+#wget https://raw.githubusercontent.com/J-Fabila/Atomic.h/master/atomicpp.h
 #Tal vez sea mejor descargar diretamente del repositorio de atomicc.pp.h
 wget https://raw.githubusercontent.com/J-Fabila/BH-VASP/master/programs/read_crystal.cpp
 g++ -o read_crystal read_crystal.cpp
