@@ -5,8 +5,9 @@ int main(int argc, char *argv[])
    double xm, ym, zm;
    double dx,dy,dz;
    double matrix[3][3];
+   double separacion;
    Cluster clus;
-   if(argc==5)
+   if(argc==6)
    {
       clus.rand_generator(argv[1],atoi(argv[2]));
       zm=stod(argv[3]);
@@ -15,10 +16,11 @@ int main(int argc, char *argv[])
       {
          matriz>>matrix[i][0]>>matrix[i][1]>>matrix[i][2];
       }
+      separacion=stod(argv[5]);
    }
    else
    {
-      if(argc==7)
+      if(argc==8)
       {
          clus.rand_generator(argv[1],atoi(argv[2]),argv[3],atoi(argv[4]));
          zm=stod(argv[5]);
@@ -27,6 +29,7 @@ int main(int argc, char *argv[])
          {
             matriz>>matrix[i][0]>>matrix[i][1]>>matrix[i][2];
          }
+         separacion=stod(argv[7]);
       }
    }
    dx=(matrix[0][0]+matrix[1][0]+matrix[2][0])/3.0;
@@ -35,10 +38,9 @@ int main(int argc, char *argv[])
 
    dx=dx+random_number(-2.0,2.0);
    dy=dy+random_number(-2.0,2.0);
-   dz=-zmin+zm;
+   dz=-zmin+zm+separacion;
 
    clus.move(dx,dy,dz);
    clus.print_xyz("ClusterGenerated.xyz");
    return 0;
 }
-
