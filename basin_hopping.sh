@@ -34,6 +34,8 @@ Pseudo_Dir=$( grep "pseudo_dir" $1 | awk '{print $3}' )
 pseudotype=$(grep "pseudo_type" $1 | awk '{print $3}' )
 step_width=$(grep "step_width" $1 | awk '{print $3}')
 Temperature=$(grep "temperature_K" $1 | awk '{ print $3 }')
+c_s_sep=$(grep "cluster_surface_separation" $1 | awk '{ print $3 }')
+
 if [ $n -gt 3 ]
 then
 Nat=$(($N_Simbolo_1+$N_Simbolo_2)) #Numero de atomos del cluster
