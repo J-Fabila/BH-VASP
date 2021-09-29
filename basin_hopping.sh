@@ -185,17 +185,17 @@ cp ../programs/Matriz_$file_name .
    then                                                                       #Caso bimetálico
       if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
       then
-  ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name
+  ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name $c_s_sep
 
       else
-  ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name
+  ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name $c_s_sep
       fi
    else                                                                     #Caso monometálico
       if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
       then
-         ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name
+         ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name $c_s_sep
       else
-         ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name
+         ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name $c_s_sep
 
       fi
    fi
@@ -260,16 +260,16 @@ cp ../programs/Matriz_$file_name .
       then                                                                       #Caso bimetálico
          if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
          then
-    ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name
+    ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name $c_s_sep
          else
-    ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name
+    ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name $c_s_sep
          fi
       else                                                                     #Caso monometálico
          if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
          then
-    ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name
+    ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name $c_s_sep
          else
-    ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name
+    ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name $c_s_sep
          fi
       fi
 rm Matriz_$file_name
@@ -507,16 +507,16 @@ cp ../programs/Matriz_$file_name .
         #Caso bimetálico
          if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
          then
-            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name
+            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name $c_s_sep
          else
-            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name
+            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $Simbolo_2 $N_Simbolo_2 $z_vac_min Matriz_$file_name $c_s_sep
          fi
       else                                                                     #Caso monometálico
          if [ $randomness -eq 1 ] #aleatoriedad total corre el generador actual
          then
-            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name
+            ./../programs/SRandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name $c_s_sep
          else
-            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name
+            ./../programs/RandomGenerator $Simbolo_1 $N_Simbolo_1 $z_vac_min Matriz_$file_name $c_s_sep
          fi
       fi
 rm Matriz_$file_name
