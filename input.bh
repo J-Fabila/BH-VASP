@@ -14,4 +14,5 @@
         iterations = 100
         randomness = 0      # 1-fully random         0-not so random
         kick_type = 1       # 1-kick with potential  0-just kick
+        cluster_surface_separation = 0.0
 
