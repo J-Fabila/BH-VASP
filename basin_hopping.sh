@@ -449,7 +449,7 @@ fi
          cat aux >> poscar.aux
          cp ../programs/kickpp .
          cp ../programs/Matriz_$file_name .
-         ./kickpp $step_width $z_vac_min Matriz_$file_name
+         ./kickpp $step_width $z_vac_min Matriz_$file_name $c_s_sep
          rm kickpp
          tail -$Nat aux2 | awk '{print $2 " "$3" "$4 }' > coords.tmp
          rm aux2
