@@ -2,6 +2,7 @@
 int main(int argc, char *argv[])
 {
    double matrix[3][3];
+   double separacion;
    ifstream matriz(argv[3]);
    for(int i=0;i<3;i++)
    {
@@ -18,10 +19,11 @@ int main(int argc, char *argv[])
    dy=(matrix[0][1]+matrix[1][1]+matrix[2][1])/3.0;
    zmin=Np.z_min();
    zm=stod(argv[2]);
-
+   separacion=stod(argv[4]);
+   
    dx=dx+random_number(-2.0,2.0);
    dy=dx+random_number(-2.0,2.0);
-   dz=-zmin+zm;
+   dz=-zmin+zm+separacion;
 
    Np.move(dx,dy,dz);
    Np.print_xyz("aux2");
